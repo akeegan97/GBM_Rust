@@ -52,8 +52,9 @@ fn main() {
     let bac = DataFrame::read_csv("D:\\Code\\Rust_Things\\GBM_Rust\\BAC.csv", true);
 
     let price_data = &bac.close;
-
-    println!("{:?}",price_data);   
+    //starting the daily log return vec calculations
+    let log_array_price_data:Vec<f32> = price_data.iter().map(|i| i.log(E)).collect();
+    println!("{:?}",log_array_price_data);
     
     
    
