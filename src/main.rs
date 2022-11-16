@@ -16,20 +16,20 @@ fn main() {
     
     let log_array:Vec<f32> = array.iter().map(|i| i.log(E)).collect();
 
-    println!("{:?}",log_array);
+    
     let mut log_array_shifted:Vec<f32>=log_array.clone();
     log_array_shifted.insert(0,0.0);
     log_array_shifted.pop();
-    println!("{:?}",log_array_shifted);
+    
 
     let diff:Vec<f32> = (0..log_array.len()).map(|i| log_array[i] - log_array_shifted[i] ).collect();
 
     let x:f32 = diff.len() as f32;
 
-    println!("difference of log returns:{:?}",diff);
+   
 
     let average_log_return:f32 = diff.iter().map(|&i| i as f32).sum::<f32>() / x;
-    println!("{:?}",average_log_return);
+    
 
     let numerator1:Vec<f32> = (0..diff.len()).map(|i|(diff[i] - average_log_return)*
         (diff[i] -average_log_return)).collect();
@@ -40,21 +40,39 @@ fn main() {
 
     let std_dev = std_dev1.sqrt();
 
-    println!("{}",std_dev);
+    
     //got the mean of the difference of logs ie log returns and the std_deviation of the log returns;
 
     //next is to implement reading csv price data into a vector of floats to replace the "array" defined
 
     
-    println!("this is the mean log return ie Mu Hat :{}",average_log_return);
-    println!("this is the standard deviation of log returns ie Sigma Hat :{}",std_dev);
+    
     
     let bac = DataFrame::read_csv("D:\\Code\\Rust_Things\\GBM_Rust\\BAC.csv", true);
 
     let price_data = &bac.close;
     //starting the daily log return vec calculations
-    let log_array_price_data:Vec<f32> = price_data.iter().map(|i| i.log(E)).collect();
-    println!("{:?}",log_array_price_data);
+    let log_array_price_data:Vec<f32> = price_data.iter().map(|j| j.log(E)).collect();
+    let mut log_array_price_data_shifter:Vec<f32> = log_array_price_data.clone();
+    log_array_price_data_shifter.insert(0, 0.0);
+    log_array_price_data_shifter.pop();
+    let diff_data:Vec<f32>= (0..log_array_price_data.len()).map(|k| log_array_price_data[k] - log_array_price_data_shifter[k]).collect();
+
+    let y:f32 = diff_data.len() as f32;
+    let average_returns_data:f32 = diff_data.iter().map(|&l| l as f32).sum::<f32>() / y;
+    let numerator_data:Vec<f32> = (0..diff_data.len()).map(|m|(diff_data[m] - average_returns_data)*
+        (diff_data[m] - average_returns_data)).collect();
+    let numerator_data_1:f32 = numerator_data.iter().map(|m| *m as f32).sum::<f32>();
+    let variance = numerator_data_1 / y;
+    let standard_var = variance.sqrt();
+
+    println!("the average log return as mu{}",average_log_return);
+    println!("the standard deviation of log returns as sigma {}", standard_var);
+    println!("the variance of log returns as sigma^2 {}",variance);
+    println!("{:?}",price_data);
+
+
+
     
     
    
