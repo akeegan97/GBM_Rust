@@ -1,4 +1,4 @@
-use std::{f32::consts::E, result};
+use std::{f32::consts::E, result, collections::HashMap};
 extern crate csv;
 #[allow(non_snake_case)]
 use csv::StringRecord;
@@ -71,12 +71,47 @@ fn main() {
     println!("the average log return as mu{}",average_returns_data);
     println!("the standard deviation of log returns as sigma {}", standard_var);
     println!("the variance of log returns as sigma^2 {}",variance);
+
+    let dates = &bac.date;
+
+    let index_start_training = dates
+        .iter()
+        .position(|x| x=="1987-01-07")
+        .unwrap();
+    let index_end_training = dates
+        .iter()
+        .position(|x| x=="1997-01-07")
+        .unwrap();
     
+    let training_set_prices = &bac.close[index_start_training..index_end_training];
+
+    let steps = 64;
+
+    let compare_set_prices = &bac.close[index_end_training+1..index_end_training+steps];
+
+    let log_array_training:Vec<f32> = training_set_prices.iter()
+        .map(|i| i.log(E))
+        .collect();
+    let mut log_array_shifted = log_array_training.clone();
+    log_array_shifted.insert(0,0.0);
+    log_array_shifted.pop();
+    let training_log_diff:Vec<f32> = (0..log_array_training.len()).map(|z|log_array_training[z] - 
+        log_array_shifted[z]).collect();
+    let z:f32 = training_log_diff.len() as f32;
+    let average_training_log:f32 = training_log_diff.iter()
+        .map(|&y| y as f32).sum::<f32>() /z;
+    let training_numerator:Vec<f32> = (0..training_log_diff.len())
+        .map(|a|(training_log_diff[a] -
+        average_training_log) * (training_log_diff[a] - average_training_log))
+        .collect();
+    let training_mu:f32 = training_numerator.iter()
+            .map(|b| *b as f32).sum::<f32>();
+    
+    println!("The training set mu is :{}", training_mu);
 
 
 
-    
-    
+
    
 
 
