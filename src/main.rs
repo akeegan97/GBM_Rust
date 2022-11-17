@@ -11,7 +11,9 @@ use csv::StringRecord;
 //T how long to predict
 
 fn main() {
-    //getting familiar with the granular operations of the vectors
+    /*
+    getting familiar with the granular operations of the vectors
+    
     let array:Vec<f32>=[1.0,2.0,3.5].to_vec();
     
     let log_array:Vec<f32> = array.iter().map(|i| i.log(E)).collect();
@@ -39,7 +41,7 @@ fn main() {
     let std_dev1 = numerator2 / x;
 
     let std_dev = std_dev1.sqrt();
-
+    */
     
     //got the mean of the difference of logs ie log returns and the std_deviation of the log returns;
 
@@ -47,9 +49,9 @@ fn main() {
 
     
     
-    
+    //reading the file into the struct created below fn main
     let bac = DataFrame::read_csv("D:\\Code\\Rust_Things\\GBM_Rust\\BAC.csv", true);
-
+    //getting the close price in an isolated Vec
     let price_data = &bac.close;
     //starting the daily log return vec calculations
     let log_array_price_data:Vec<f32> = price_data.iter().map(|j| j.log(E)).collect();
@@ -57,7 +59,7 @@ fn main() {
     log_array_price_data_shifter.insert(0, 0.0);
     log_array_price_data_shifter.pop();
     let diff_data:Vec<f32>= (0..log_array_price_data.len()).map(|k| log_array_price_data[k] - log_array_price_data_shifter[k]).collect();
-
+    //getting the daily log returns 
     let y:f32 = diff_data.len() as f32;
     let average_returns_data:f32 = diff_data.iter().map(|&l| l as f32).sum::<f32>() / y;
     let numerator_data:Vec<f32> = (0..diff_data.len()).map(|m|(diff_data[m] - average_returns_data)*
@@ -66,10 +68,10 @@ fn main() {
     let variance = numerator_data_1 / y;
     let standard_var = variance.sqrt();
 
-    println!("the average log return as mu{}",average_log_return);
+    println!("the average log return as mu{}",average_returns_data);
     println!("the standard deviation of log returns as sigma {}", standard_var);
     println!("the variance of log returns as sigma^2 {}",variance);
-    println!("{:?}",price_data);
+    
 
 
 
