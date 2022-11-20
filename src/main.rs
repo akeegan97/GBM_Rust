@@ -1,4 +1,4 @@
-use std::{f32::consts::E, result};
+use std::{f32::consts::E, result, collections::HashMap};
 extern crate csv;
 #[allow(non_snake_case)]
 use csv::StringRecord;
@@ -11,7 +11,9 @@ use csv::StringRecord;
 //T how long to predict
 
 fn main() {
+    
     //getting familiar with the granular operations of the vectors
+    
     let array:Vec<f32>=[1.0,2.0,3.5].to_vec();
     
     let log_array:Vec<f32> = array.iter().map(|i| i.log(E)).collect();
@@ -39,7 +41,6 @@ fn main() {
     let std_dev1 = numerator2 / x;
 
     let std_dev = std_dev1.sqrt();
-
     
     //got the mean of the difference of logs ie log returns and the std_deviation of the log returns;
 
@@ -48,8 +49,9 @@ fn main() {
     
     
     
+    //reading the file into the struct created below fn main
     let bac = DataFrame::read_csv("D:\\Code\\Rust_Things\\GBM_Rust\\BAC.csv", true);
-
+    //getting the close price in an isolated Vec
     let price_data = &bac.close;
     //starting the daily log return vec calculations
     let log_array_price_data:Vec<f32> = price_data.iter().map(|j| j.log(E)).collect();
@@ -57,7 +59,6 @@ fn main() {
     log_array_price_data_shifter.insert(0, 0.0);
     log_array_price_data_shifter.pop();
     let diff_data:Vec<f32>= (0..log_array_price_data.len()).map(|k| log_array_price_data[k] - log_array_price_data_shifter[k]).collect();
-
     let y:f32 = diff_data.len() as f32;
     let average_returns_data:f32 = diff_data.iter().map(|&l| l as f32).sum::<f32>() / y;
     let numerator_data:Vec<f32> = (0..diff_data.len()).map(|m|(diff_data[m] - average_returns_data)*
@@ -74,7 +75,35 @@ fn main() {
 
 
     
+    let training_set_prices = &bac.close[index_start_training..index_end_training];
+
+    let steps = 64;
+
+    let compare_set_prices = &bac.close[index_end_training+1..index_end_training+steps];
+
+    let log_array_training:Vec<f32> = training_set_prices.iter()
+        .map(|i| i.log(E))
+        .collect();
+    let mut log_array_shifted = log_array_training.clone();
+    log_array_shifted.insert(0,0.0);
+    log_array_shifted.pop();
+    let training_log_diff:Vec<f32> = (0..log_array_training.len()).map(|z|log_array_training[z] - 
+        log_array_shifted[z]).collect();
+    let z:f32 = training_log_diff.len() as f32;
+    let average_training_log:f32 = training_log_diff.iter()
+        .map(|&y| y as f32).sum::<f32>() /z;
+    let training_numerator:Vec<f32> = (0..training_log_diff.len())
+        .map(|a|(training_log_diff[a] -
+        average_training_log) * (training_log_diff[a] - average_training_log))
+        .collect();
+    let training_mu:f32 = training_numerator.iter()
+            .map(|b| *b as f32).sum::<f32>();
     
+    println!("The training set mu is :{}", training_mu);
+
+
+
+
    
 
 
