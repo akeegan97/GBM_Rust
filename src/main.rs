@@ -13,7 +13,7 @@ use csv::StringRecord;
 fn main() {
     
     //getting familiar with the granular operations of the vectors
-    
+    /* 
     let array:Vec<f32>=[1.0,2.0,3.5].to_vec();
     
     let log_array:Vec<f32> = array.iter().map(|i| i.log(E)).collect();
@@ -40,7 +40,7 @@ fn main() {
 
     let std_dev1 = numerator2 / x;
 
-    let std_dev = std_dev1.sqrt();
+    let std_dev = std_dev1.sqrt();*/
     
     //got the mean of the difference of logs ie log returns and the std_deviation of the log returns;
 
@@ -67,11 +67,22 @@ fn main() {
     let variance = numerator_data_1 / y;
     let standard_var = variance.sqrt();
 
-    println!("the average log return as mu{}",average_log_return);
+    println!("the average log return as mu{}",average_returns_data);
     println!("the standard deviation of log returns as sigma {}", standard_var);
     println!("the variance of log returns as sigma^2 {}",variance);
-    println!("{:?}",price_data);
+    
 
+    let start_date:&str = "1987-01-07";
+    let end_date:&str = "1997-01-07";
+
+    let index_start_training = bac.date  
+        .iter()
+        .position(|a| a == start_date)
+        .unwrap();
+    let index_end_training = bac.date
+        .iter()
+        .position(|b|  b == end_date)
+        .unwrap();
 
 
     
@@ -89,17 +100,22 @@ fn main() {
     log_array_shifted.pop();
     let training_log_diff:Vec<f32> = (0..log_array_training.len()).map(|z|log_array_training[z] - 
         log_array_shifted[z]).collect();
-    let z:f32 = training_log_diff.len() as f32;
-    let average_training_log:f32 = training_log_diff.iter()
-        .map(|&y| y as f32).sum::<f32>() /z;
+    let c:f32 = training_log_diff.len() as f32;
+    let summed_training_log:f32 = training_log_diff.iter()
+        .map(|&d| d as f32).sum::<f32>();
+    let training_mu_non_normalized = summed_training_log/ c as f32;
     let training_numerator:Vec<f32> = (0..training_log_diff.len())
         .map(|a|(training_log_diff[a] -
-        average_training_log) * (training_log_diff[a] - average_training_log))
+        training_mu_non_normalized) * (training_log_diff[a] - training_mu_non_normalized))
         .collect();
     let training_mu:f32 = training_numerator.iter()
             .map(|b| *b as f32).sum::<f32>();
     
-    println!("The training set mu is :{}", training_mu);
+    println!("The training set mu is :{}", summed_training_log);
+    println!("start index is: {}",index_start_training);
+    println!("the end index is: {}",index_end_training);
+   
+    println!("length of training data: {}",c);
 
 
 
