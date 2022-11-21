@@ -1,4 +1,4 @@
-use std::{f32::consts::E, result, collections::HashMap};
+use std::{f32::consts::E, result, collections::{HashMap, VecDeque}};
 extern crate csv;
 #[allow(non_snake_case)]
 use csv::StringRecord;
@@ -85,9 +85,12 @@ fn main() {
     //both have the same length
 
     // getting the log daily log returns
-    let log_returns:Vec<f32> = (0..log_training_prices.len())
+    let mut log_returns:VecDeque<f32> = (0..log_training_prices.len())
         .map(|b| log_training_prices[b] - log_training_prices_shifted[b])
         .collect();
+    //need to remove first element of vector of log returns
+    log_returns.pop_front();
+    
     let length_of_log_returns:f32 = log_returns.len() as f32;
     //sum all the log returns
 
