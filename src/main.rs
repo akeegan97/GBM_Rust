@@ -53,28 +53,10 @@ fn main() {
     let bac = DataFrame::read_csv("D:\\Code\\Rust_Things\\GBM_Rust\\BAC.csv", true);
     //getting the close price in an isolated Vec
     let price_data = &bac.close;
-    //starting the daily log return vec calculations
-    let log_array_price_data:Vec<f32> = price_data.iter().map(|j| j.log(E)).collect();
-    let mut log_array_price_data_shifter:Vec<f32> = log_array_price_data.clone();
-    log_array_price_data_shifter.insert(0, 0.0);
-    log_array_price_data_shifter.pop();
-    let diff_data:Vec<f32>= (0..log_array_price_data.len()).map(|k| log_array_price_data[k] - log_array_price_data_shifter[k]).collect();
-    let y:f32 = diff_data.len() as f32;
-    let average_returns_data:f32 = diff_data.iter().map(|&l| l as f32).sum::<f32>() / y;
-    let numerator_data:Vec<f32> = (0..diff_data.len()).map(|m|(diff_data[m] - average_returns_data)*
-        (diff_data[m] - average_returns_data)).collect();
-    let numerator_data_1:f32 = numerator_data.iter().map(|m| *m as f32).sum::<f32>();
-    let variance = numerator_data_1 / y;
-    let standard_var = variance.sqrt();
-
-    println!("the average log return as mu{}",average_returns_data);
-    println!("the standard deviation of log returns as sigma {}", standard_var);
-    println!("the variance of log returns as sigma^2 {}",variance);
-    
-
-    let start_date:&str = "1987-01-07";
-    let end_date:&str = "1997-01-07";
-
+    //setting the sample data indexes
+    let start_date:&str = "2014-06-02";
+    let end_date:&str = "2018-06-01";
+    //getting the index number of the dates above for the sample price data
     let index_start_training = bac.date  
         .iter()
         .position(|a| a == start_date)
@@ -83,39 +65,56 @@ fn main() {
         .iter()
         .position(|b|  b == end_date)
         .unwrap();
+    // breaking the original dataframe into a smaller chunk indexed with the above index numbers
+
+    let training_prices:Vec<f32> = (&price_data[index_start_training..index_end_training]).to_vec();
+    
+    //taking the natural log of each element in the training price vector
+    let log_training_prices:Vec<f32> = training_prices
+        .iter()
+        .map(|a| a.log(E))
+        .collect();
+    //creating a second vector that is shifter up by 1 index place
+    let mut log_training_prices_shifted:Vec<f32> = log_training_prices
+        .clone();
+    log_training_prices_shifted.insert(0, 0.0);
+    log_training_prices_shifted.pop();
+    //testing to see if both lengths are the same
+
+    //println!("{},{}",log_training_prices.len(),log_training_prices_shifted.len());
+    //both have the same length
+
+    // getting the log daily log returns
+    let log_returns:Vec<f32> = (0..log_training_prices.len())
+        .map(|b| log_training_prices[b] - log_training_prices_shifted[b])
+        .collect();
+    let length_of_log_returns:f32 = log_returns.len() as f32;
+    //sum all the log returns
+
+    let summed_log_returns:f32 = log_returns
+        .iter()
+        .map(|c| *c as f32)
+        .sum::<f32>();
+    println!("{} = summed log returns of the training data set",summed_log_returns);
+
+    //expected average log return of mu hat 
+
+    let average_training_log_return:f32 = summed_log_returns / length_of_log_returns;
+
+    println!("the expected log return is {} mu hat",average_training_log_return);
+
+    
 
 
     
-    let training_set_prices = &bac.close[index_start_training..index_end_training];
 
-    let steps = 64;
 
-    let compare_set_prices = &bac.close[index_end_training+1..index_end_training+steps];
 
-    let log_array_training:Vec<f32> = training_set_prices.iter()
-        .map(|i| i.log(E))
-        .collect();
-    let mut log_array_shifted = log_array_training.clone();
-    log_array_shifted.insert(0,0.0);
-    log_array_shifted.pop();
-    let training_log_diff:Vec<f32> = (0..log_array_training.len()).map(|z|log_array_training[z] - 
-        log_array_shifted[z]).collect();
-    let c:f32 = training_log_diff.len() as f32;
-    let summed_training_log:f32 = training_log_diff.iter()
-        .map(|&d| d as f32).sum::<f32>();
-    let training_mu_non_normalized = summed_training_log/ c as f32;
-    let training_numerator:Vec<f32> = (0..training_log_diff.len())
-        .map(|a|(training_log_diff[a] -
-        training_mu_non_normalized) * (training_log_diff[a] - training_mu_non_normalized))
-        .collect();
-    let training_mu:f32 = training_numerator.iter()
-            .map(|b| *b as f32).sum::<f32>();
+
+
     
-    println!("The training set mu is :{}", summed_training_log);
-    println!("start index is: {}",index_start_training);
-    println!("the end index is: {}",index_end_training);
-   
-    println!("length of training data: {}",c);
+    
+    //println!("length of training data: {:?}",training_log_diff);
 
 
 
