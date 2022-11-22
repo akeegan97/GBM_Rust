@@ -106,12 +106,41 @@ fn main() {
 
     println!("the expected log return is {} mu hat",average_training_log_return);
 
+    // estimating the sigma and sigma^2
+    //getting the square of the difference of each element minus the average log return
+    let numerator1:Vec<f32> = (0..log_returns.len())
+        .map(|d| (log_returns[d] - average_training_log_return) 
+        * (log_returns[d] - average_training_log_return))
+        .collect();
+    let numerator2:f32 = numerator1
+        .iter()
+        .map(|e| *e as f32)
+        .sum::<f32>();
+    let variance:f32 = numerator2 / length_of_log_returns;
     
+    let standard_dev = variance.sqrt();
+    let normalized_standard_dev = standard_dev * 64.0_f32.sqrt();
+    let normalized_variance = normalized_standard_dev.sqrt();
 
+    println!("the standard deviation is {}, \nthe variance is {}",normalized_standard_dev,normalized_variance);
+    
+    let paths:u32 = 1_000;
+    let steps:u32 = 64;
+    //finished the estimating of the paramaters mu(average log return) and sigma(variance)
+    //implementing a for loop to push the answers of the equation to a vector
+    let mut big_vec:Vec<Vec<u32>> = Vec::new();
+//testing creating a vector of length of the paths to simulate with vectors as elements that are the length of 
+//the predicting steps
+    for j in 0..paths{
+        let mut inner_vec:Vec<u32> = Vec::new();
+        for i in 0..steps{
+            inner_vec.push(i);
+        }
+        big_vec.push(inner_vec);
+    }
+    println!("{:?}",big_vec);
 
     
-
-
 
 
 
