@@ -1,7 +1,7 @@
 use std::{f32::consts::E, collections::{ VecDeque}};
 extern crate csv;
-#[allow(non_snake_case)]
-use csv::StringRecord;
+
+//use csv::StringRecord;
 use rand_distr::{Normal, Distribution};
 
 
