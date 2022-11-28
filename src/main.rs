@@ -127,7 +127,7 @@ fn main() {
 
     println!("the standard deviation is {}, \nthe variance is {}",normalized_standard_dev,normalized_variance);
     
-    let paths:u32 = 10;
+    let paths:u32 = 1_000;
     let steps:u32 = 64;
     let delta_T:f32 = 1.0 / steps as f32;
     //finished the estimating of the paramaters mu(average log return) and sigma(variance)
@@ -155,7 +155,7 @@ fn main() {
         big_vec
             .push(inner_vec);
     }
-    println!("{:?}",big_vec);
+    println!("{:?}",big_vec.len());
 
     
 
