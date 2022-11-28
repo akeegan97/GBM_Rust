@@ -142,7 +142,7 @@ fn main() {
         let mut abc:u32 = 1;
         while  abc <= steps{
             let mut index_position = abc;
-            let normal = Normal::new(average_training_log_return, variance).unwrap();
+            let normal = Normal::new(average_training_log_return, delta_T.sqrt()).unwrap();
             let mut random_distr_value = normal
                 .sample(&mut rand::thread_rng());
             let mut value:f32 = inner_vec[index_position as usize -1];
