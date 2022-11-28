@@ -7,4 +7,6 @@ edition = "2021"
 
 [dependencies]
 csv = "1.1.6"
+rand_distr = "0.4.3"
+rand = "0.8.5"
 

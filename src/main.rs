@@ -1,7 +1,10 @@
-use std::{f32::consts::E, result, collections::{HashMap, VecDeque}};
+use std::{f32::consts::E, collections::{ VecDeque}};
 extern crate csv;
 #[allow(non_snake_case)]
 use csv::StringRecord;
+use rand_distr::{Normal, Distribution};
+
+
 //use std::error::Error;
 
 
@@ -124,19 +127,33 @@ fn main() {
 
     println!("the standard deviation is {}, \nthe variance is {}",normalized_standard_dev,normalized_variance);
     
-    let paths:u32 = 1_000;
+    let paths:u32 = 10;
     let steps:u32 = 64;
+    let delta_T:f32 = 1.0 / steps as f32;
     //finished the estimating of the paramaters mu(average log return) and sigma(variance)
     //implementing a for loop to push the answers of the equation to a vector
-    let mut big_vec:Vec<Vec<u32>> = Vec::new();
+    let mut big_vec:Vec<Vec<f32>> = Vec::new();
 //testing creating a vector of length of the paths to simulate with vectors as elements that are the length of 
 //the predicting steps
+    let first_in_inner_vec = training_prices[training_prices.len()-1];
     for j in 0..paths{
-        let mut inner_vec:Vec<u32> = Vec::new();
-        for i in 0..steps{
-            inner_vec.push(i);
-        }
-        big_vec.push(inner_vec);
+        let mut inner_vec:Vec<f32> = Vec::new();
+        inner_vec.push(first_in_inner_vec);
+        let mut abc:u32 = 1;
+        while  abc <= steps{
+            let mut index_position = abc;
+            let normal = Normal::new(average_training_log_return, variance).unwrap();
+            let mut random_distr_value = normal
+                .sample(&mut rand::thread_rng());
+            let mut value:f32 = inner_vec[index_position as usize -1];
+            let mut operation = value * (E
+                .powf(average_training_log_return-(0.5*normalized_standard_dev)*delta_T + normalized_variance * random_distr_value));
+            abc +=1;
+            inner_vec
+                .push(operation);
+        };
+        big_vec
+            .push(inner_vec);
     }
     println!("{:?}",big_vec);
 
