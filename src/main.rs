@@ -1,5 +1,6 @@
 use std::{f32::consts::E, collections::{ VecDeque}};
 extern crate csv;
+use plotly::{Plot, Scatter};
 
 //use csv::StringRecord;
 use rand_distr::{Normal, Distribution};
@@ -128,7 +129,7 @@ fn main() {
 
     println!("the standard deviation is {}, \nthe variance is {}",normalized_standard_dev,normalized_variance);
     
-    let paths:u32 = 10;
+    let paths:u32 = 1000;
     let steps:u32 = 64;
     let delta_t:f32 = 1.0 / steps as f32;
     //finished the estimating of the paramaters mu(average log return) and sigma(variance)
@@ -158,20 +159,22 @@ fn main() {
         big_vec
             .push(inner_vec);
     }
-    println!("{:?}",big_vec);
 
+    //testing the plotting ability of rust 
+    let mut dates = bac.date;
+    dates = dates[index_end_training..index_end_training+64]
+        .to_vec();    
+    //println!("{:?}",big_vec);
+    let mut plot = Plot::new();
+    //let trace = Scatter::new(dates, training_prices);
+    for k in big_vec{
+        let traces = Scatter::new(dates.clone(),k);//.clone() definitely not the fastest way
+        plot.add_trace(traces);
+    }
+    //plot.add_trace(trace);
     
-
-
-
-    
-    
-    //println!("length of training data: {:?}",training_log_diff);
-
-
-
-
-   
+    plot.write_html("out.html");
+    //above works and writes html file that shows the GBM paths=N for the specified step size.
 
 
 }
