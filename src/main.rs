@@ -1,57 +1,12 @@
 use std::{f32::consts::E, collections::{ VecDeque}};
 extern crate csv;
-use plotly::{Plot, Scatter};
-
-//use csv::StringRecord;
+use plotly::{Plot, Scatter, Histogram};
 use rand_distr::{Normal, Distribution};
+use plotly::histogram::{Bins};
 
 
-//use std::error::Error;
-
-
-//Geometric Brownian Motion Equation: St = S0exp(mu-1/2(sigma^2)*DeltaT + Sigma*Wt ~ N(0,sqrt(DeltaT)))
-//Mu to be estimated as the mean of sample log returns
-//sigma^2 as the mean of the variance of the sample log returns
-//T how long to predict
 
 fn main() {
-    
-    //getting familiar with the granular operations of the vectors
-    /* 
-    let array:Vec<f32>=[1.0,2.0,3.5].to_vec();
-    
-    let log_array:Vec<f32> = array.iter().map(|i| i.log(E)).collect();
-
-    
-    let mut log_array_shifted:Vec<f32>=log_array.clone();
-    log_array_shifted.insert(0,0.0);
-    log_array_shifted.pop();
-    
-
-    let diff:Vec<f32> = (0..log_array.len()).map(|i| log_array[i] - log_array_shifted[i] ).collect();
-
-    let x:f32 = diff.len() as f32;
-
-   
-
-    let average_log_return:f32 = diff.iter().map(|&i| i as f32).sum::<f32>() / x;
-    
-
-    let numerator1:Vec<f32> = (0..diff.len()).map(|i|(diff[i] - average_log_return)*
-        (diff[i] -average_log_return)).collect();
-    
-    let numerator2:f32 = numerator1.iter().map(|i| *i as f32).sum::<f32>();
-
-    let std_dev1 = numerator2 / x;
-
-    let std_dev = std_dev1.sqrt();*/
-    
-    //got the mean of the difference of logs ie log returns and the std_deviation of the log returns;
-
-    //next is to implement reading csv price data into a vector of floats to replace the "array" defined
-
-    
-    
     
     //reading the file into the struct created below fn main
     let bac = DataFrame::read_csv("D:\\Code\\Rust_Things\\GBM_Rust\\BAC.csv", true);
@@ -84,10 +39,6 @@ fn main() {
         .clone();
     log_training_prices_shifted.insert(0, 0.0);
     log_training_prices_shifted.pop();
-    //testing to see if both lengths are the same
-
-    //println!("{},{}",log_training_prices.len(),log_training_prices_shifted.len());
-    //both have the same length
 
     // getting the log daily log returns
     let mut log_returns:VecDeque<f32> = (0..log_training_prices.len())
@@ -103,14 +54,10 @@ fn main() {
         .iter()
         .map(|c| *c as f32)
         .sum::<f32>();
-    println!("{} = summed log returns of the training data set",summed_log_returns);
-
     //expected average log return of mu hat 
-
     let average_training_log_return:f32 = summed_log_returns / length_of_log_returns;
 
     println!("the expected log return is {} mu hat",average_training_log_return);
-
     // estimating the sigma and sigma^2
     //getting the square of the difference of each element minus the average log return
     let numerator1:Vec<f32> = (0..log_returns.len())
@@ -135,9 +82,8 @@ fn main() {
     //finished the estimating of the paramaters mu(average log return) and sigma(variance)
     //implementing a for loop to push the answers of the equation to a vector
     let mut big_vec:Vec<Vec<f32>> = Vec::new();
-//testing creating a vector of length of the paths to simulate with vectors as elements that are the length of 
-//the predicting steps
-
+    //testing creating a vector of length of the paths to simulate with vectors as elements that are the length of 
+    //the predicting steps
 
     let first_in_inner_vec = training_prices[training_prices.len()-1];
     for _j in 0..paths{
@@ -159,22 +105,54 @@ fn main() {
         big_vec
             .push(inner_vec);
     }
+    let gbm = big_vec.clone();
+    let histogram_prices = big_vec.clone();
 
-    //testing the plotting ability of rust 
+    //getting the x-axis values to plot
     let mut dates = bac.date;
-    dates = dates[index_end_training..index_end_training+64]
+    dates = dates[index_end_training..index_end_training+64]//setting dates equal to the same dates that are in the training set data
         .to_vec();    
-    //println!("{:?}",big_vec);
+    //defining the plot var
     let mut plot = Plot::new();
-    //let trace = Scatter::new(dates, training_prices);
+    //for loop to "pop" each element of the bigvec to be able to plot each path
     for k in big_vec{
-        let traces = Scatter::new(dates.clone(),k);//.clone() definitely not the fastest way
+        let traces = Scatter::new(dates.clone(),k);
         plot.add_trace(traces);
     }
-    //plot.add_trace(trace);
-    
+    //adding the output of the plot to a .html file for viewing
     plot.write_html("out.html");
-    //above works and writes html file that shows the GBM paths=N for the specified step size.
+
+    //creating a vec of all the last predicted price 
+    let mut predicted_price:Vec<f32> = Vec::new();
+    for o in gbm{
+        let price:f32 = o[o.len()-1];
+        predicted_price.push(price);
+    }
+    let summed_predicted_prices = predicted_price
+        .iter()
+        .map(|z| *z as f32)
+        .sum::<f32>();
+    let average_predicted_price = summed_predicted_prices / paths as f32;
+    //getting the real value of the price on the predicted price date;
+    let real_price:f32 = bac.close[index_end_training + steps as usize];
+    //printing out the predicted price and the real price as well as the difference
+    println!("The Predicted Price is {}\nThe Real Price was {}\nDifference was {}",
+    average_predicted_price
+    ,real_price
+    ,(average_predicted_price-real_price));
+
+    //making a histogram
+
+    let mut scatter = Plot::new();
+    //working on styling the histogram plot
+    for y in histogram_prices{
+        let traces = Histogram::new(y).name("Prices")
+            .auto_bin_x(false)
+            .x_bins(Bins::new(0.0,80.0,5.0));
+        scatter.add_trace(traces);
+    }
+
+    scatter.write_html("Histogram.html");
 
 
 }
