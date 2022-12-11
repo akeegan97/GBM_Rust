@@ -1,8 +1,9 @@
-use std::{f32::consts::E, collections::{ VecDeque}};
+use std::{f32::consts::E, collections::{ VecDeque}, io::Read};
 extern crate csv;
 use plotly::{Plot, Scatter, Histogram};
 use rand_distr::{Normal, Distribution};
 use plotly::histogram::{Bins};
+use std::io;
 
 
 
@@ -206,6 +207,21 @@ impl DataFrame{
     }
 
 }
+//asks user for the file path and creates a dataframe from the answer
+fn make_df() -> DataFrame{
+    println!("To Start a GBM simulation please enter the file path of the 
+        csv data file MAKE SURE YOU USE DOUBLE BACKSLASHES '\\' : ");
+    let mut file_path = String::new();
+    io::stdin().read_line(&mut file_path);
+    file_path.pop();
+    let data = file_path.as_str();
+    //push the data into the dataframe
+    let df_all = DataFrame::read_csv(data ,true);
+    return df_all
+}
+
+
+
 
 
 
