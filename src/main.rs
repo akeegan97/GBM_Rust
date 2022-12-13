@@ -10,12 +10,14 @@ use std::io;
 fn main() {
     
     //reading the file into the struct created below fn main
-    let bac = DataFrame::read_csv("D:\\Code\\Rust_Things\\GBM_Rust\\BAC.csv", true);
+    let bac =DataFrame::read_csv("D:\\Code\\Rust_Things\\GBM_Rust\\BAC.csv", true);
     //getting the close price in an isolated Vec
     let _data_headers = bac.header;
     let price_data = &bac.close;
     //setting the sample data indexes
-    let start_date:&str = "2014-06-02";
+    let binding = start_date();
+    let start_date:&str = binding.as_str(); 
+    //"2014-06-02";
     let end_date:&str = "2018-06-01";
     //getting the index number of the dates above for the sample price data
     let index_start_training = bac.date  
@@ -212,13 +214,43 @@ fn make_df() -> DataFrame{
     println!("To Start a GBM simulation please enter the file path of the 
         csv data file MAKE SURE YOU USE DOUBLE BACKSLASHES '\\' : ");
     let mut file_path = String::new();
-    io::stdin().read_line(&mut file_path);
-    file_path.pop();
-    let data = file_path.as_str();
+    io::stdin().read_line(&mut file_path).expect("file path incorrect or does not exist");
+    let file_path = file_path.trim();
     //push the data into the dataframe
-    let df_all = DataFrame::read_csv(data ,true);
+    let df_all = DataFrame::read_csv(file_path ,true);
     return df_all
 }
+//ask for start date of training set
+fn start_date() -> String {
+    println!("Enter the start date of the training set data in the format yyyy-mm-dd: ");
+    let mut start_date = String::new();
+    io::stdin().read_line(&mut start_date).expect("failed to read");
+    let start_date = start_date.trim();
+    return start_date.to_string()
+}
+//ask for ending date of training set
+fn end_date() -> String{
+    println!("Enter the end date of the training set data in the format yyyy-mm-dd: ");
+    let mut end_date = String::new();
+    io::stdin().read_line(&mut end_date).expect("failed to read date, check that date is in the correct format and was a trading day");
+    let end_date = end_date.trim();
+    return end_date.to_string()
+}
+
+fn prediction_steps() -> i32{
+    println!("How many days do you want to predict the price? Enter: ");
+    let mut steps:String = String::new();
+    match io::stdin().read_line(&mut steps){
+        Ok(_n) => {let steps_int = steps.parse::<i32>().unwrap();
+            return steps_int;}
+        Err(error) => 
+        {
+            println!("error: {error}");
+            return 0;
+        }
+    }
+}
+
 
 
 
