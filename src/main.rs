@@ -1,4 +1,4 @@
-use std::{f32::consts::E, collections::{ VecDeque}, io::Read};
+use std::{f32::consts::E, collections::{ VecDeque}};
 extern crate csv;
 use plotly::{Plot, Scatter, Histogram};
 use rand_distr::{Normal, Distribution};
