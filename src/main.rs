@@ -10,7 +10,10 @@ use std::io;
 fn main() {
     
     //reading the file into the struct created below fn main
-    let bac =DataFrame::read_csv("D:\\Code\\Rust_Things\\GBM_Rust\\BAC.csv", true);
+    let bac = make_df();
+    let steps:u32 = prediction_steps();
+
+    //DataFrame::read_csv("D:\\Code\\Rust_Things\\GBM_Rust\\BAC.csv", true);
     //getting the close price in an isolated Vec
     let _data_headers = bac.header;
     let price_data = &bac.close;
@@ -18,7 +21,9 @@ fn main() {
     let binding = start_date();
     let start_date:&str = binding.as_str(); 
     //"2014-06-02";
-    let end_date:&str = "2018-06-01";
+    let binding_2 = end_date();
+    let end_date:&str = binding_2.as_str();
+    //"2018-06-01";
     //getting the index number of the dates above for the sample price data
     let index_start_training = bac.date  
         .iter()
@@ -80,7 +85,8 @@ fn main() {
     println!("the standard deviation is {}, \nthe variance is {}",normalized_standard_dev,normalized_variance);
     
     let paths:u32 = 1000;
-    let steps:u32 = 64;
+    
+    //64;
     let delta_t:f32 = 1.0 / steps as f32;
     //finished the estimating of the paramaters mu(average log return) and sigma(variance)
     //implementing a for loop to push the answers of the equation to a vector
@@ -237,18 +243,13 @@ fn end_date() -> String{
     return end_date.to_string()
 }
 
-fn prediction_steps() -> i32{
+fn prediction_steps() -> u32{
     println!("How many days do you want to predict the price? Enter: ");
     let mut steps:String = String::new();
-    match io::stdin().read_line(&mut steps){
-        Ok(_n) => {let steps_int = steps.parse::<i32>().unwrap();
-            return steps_int;}
-        Err(error) => 
-        {
-            println!("error: {error}");
-            return 0;
-        }
-    }
+    io::stdin().read_line(&mut steps).expect("Error on Step size");
+    let steps = steps.trim();
+    let step:u32 = steps.parse().unwrap();
+    return step
 }
 
 
