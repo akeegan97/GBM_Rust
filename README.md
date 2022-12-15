@@ -1,3 +1,2 @@
 # GBM in Rust
-This project is a rewrite of another project I did in Python to Rust. This project takes historical stock/asset pricing data and simulates
-Geometric Brownian Motion paths for a specified forecasted time period. Ending with a predicted price of the asset at that date.
+This project took an existing project I had made in Python and rewrote in Rust as a hands on experience working with Rust code. It takes user input through stdin for the paramaters to the function and returns the predicted stock price at a certain day specified by the user. The dates input must have been trading days, and the predicted step size must fall into the dataset used. For example if the last date in the dataset was 2022-12-14, you can only predict prices that occured on that day or before.
