@@ -11,19 +11,18 @@ fn main() {
     
     //reading the file into the struct created below fn main
     let bac = make_df();
+    //asking for prediction steps aka days to predict
     let steps:u32 = prediction_steps();
-
-    //DataFrame::read_csv("D:\\Code\\Rust_Things\\GBM_Rust\\BAC.csv", true);
     //getting the close price in an isolated Vec
     let _data_headers = bac.header;
     let price_data = &bac.close;
     //setting the sample data indexes
     let binding = start_date();
     let start_date:&str = binding.as_str(); 
-    //"2014-06-02";
+    
     let binding_2 = end_date();
     let end_date:&str = binding_2.as_str();
-    //"2018-06-01";
+    
     //getting the index number of the dates above for the sample price data
     let index_start_training = bac.date  
         .iter()
@@ -42,9 +41,10 @@ fn main() {
         .iter()
         .map(|a| a.log(E))
         .collect();
-    //creating a second vector that is shifter up by 1 index place
+    //creating a second vector that is shifted up by 1 index place
     let mut log_training_prices_shifted:Vec<f32> = log_training_prices
         .clone();
+    //inserting a 0 at index 0 
     log_training_prices_shifted.insert(0, 0.0);
     log_training_prices_shifted.pop();
 
@@ -65,12 +65,13 @@ fn main() {
     //expected average log return of mu hat 
     let average_training_log_return:f32 = summed_log_returns / length_of_log_returns;
 
-    println!("the expected log return is {} mu hat",average_training_log_return);
+    println!("the expected log return is :{}",average_training_log_return);
     // estimating the sigma and sigma^2
+    let mu_hat = average_training_log_return;
     //getting the square of the difference of each element minus the average log return
     let numerator1:Vec<f32> = (0..log_returns.len())
-        .map(|d| (log_returns[d] - average_training_log_return) 
-        * (log_returns[d] - average_training_log_return))
+        .map(|d| (log_returns[d] - mu_hat) 
+        * (log_returns[d] - mu_hat))
         .collect();
     let numerator2:f32 = numerator1
         .iter()
@@ -79,20 +80,17 @@ fn main() {
     let variance:f32 = numerator2 / length_of_log_returns;
     
     let standard_dev = variance.sqrt();
-    let normalized_standard_dev = standard_dev * 64.0_f32.sqrt();
+    let normalized_standard_dev = standard_dev * (steps as f32).sqrt();
     let normalized_variance = normalized_standard_dev.sqrt();
 
     println!("the standard deviation is {}, \nthe variance is {}",normalized_standard_dev,normalized_variance);
     
-    let paths:u32 = 1000;
+    let paths:u32 = 100_000;
     
-    //64;
     let delta_t:f32 = 1.0 / steps as f32;
     //finished the estimating of the paramaters mu(average log return) and sigma(variance)
-    //implementing a for loop to push the answers of the equation to a vector
     let mut big_vec:Vec<Vec<f32>> = Vec::new();
-    //testing creating a vector of length of the paths to simulate with vectors as elements that are the length of 
-    //the predicting steps
+    
 
     let first_in_inner_vec = training_prices[training_prices.len()-1];
     for _j in 0..paths{
@@ -101,12 +99,12 @@ fn main() {
         let mut abc:u32 = 1;
         while  abc <= steps{
             let index_position: u32 = abc;
-            let normal = Normal::new(average_training_log_return, delta_t.sqrt()).unwrap();
+            let normal = Normal::new(mu_hat, delta_t.sqrt()).unwrap();
             let random_distr_value: f32 = normal
                 .sample(&mut rand::thread_rng());
             let value:f32 = inner_vec[index_position as usize -1];
             let operation = value * (E
-                .powf(average_training_log_return-(0.5*normalized_standard_dev)*delta_t + normalized_variance * random_distr_value));
+                .powf(mu_hat-(0.5*normalized_standard_dev)*delta_t + normalized_variance * random_distr_value));
             abc +=1;
             inner_vec
                 .push(operation);
@@ -119,7 +117,7 @@ fn main() {
 
     //getting the x-axis values to plot
     let mut dates = bac.date;
-    dates = dates[index_end_training..index_end_training+64]//setting dates equal to the same dates that are in the training set data
+    dates = dates[index_end_training..index_end_training+(steps as usize)]//setting dates equal to the same dates that are in the training set data
         .to_vec();    
     //defining the plot var
     let mut plot = Plot::new();
@@ -149,6 +147,9 @@ fn main() {
     average_predicted_price
     ,real_price
     ,(average_predicted_price-real_price));
+    //getting precent error 
+    let percent_dif:f32 = (real_price-average_predicted_price)/average_predicted_price * 100.0;
+    println!("The percent error is :%{} ",percent_dif);
 
     //making a histogram
 
@@ -217,10 +218,10 @@ impl DataFrame{
 }
 //asks user for the file path and creates a dataframe from the answer
 fn make_df() -> DataFrame{
-    println!("To Start a GBM simulation please enter the file path of the 
-        csv data file MAKE SURE YOU USE DOUBLE BACKSLASHES '\\' : ");
+    println!("To Start a GBM simulation please enter the file path of the\n
+    csv data file make sure to use forward slashes '/' instead of backslashes : ");
     let mut file_path = String::new();
-    io::stdin().read_line(&mut file_path).expect("file path incorrect or does not exist");
+    io::stdin().read_line(&mut file_path).expect("file path is incorrect or does not exist");
     let file_path = file_path.trim();
     //push the data into the dataframe
     let df_all = DataFrame::read_csv(file_path ,true);
@@ -242,7 +243,7 @@ fn end_date() -> String{
     let end_date = end_date.trim();
     return end_date.to_string()
 }
-
+//ask for number of trading days to predict
 fn prediction_steps() -> u32{
     println!("How many days do you want to predict the price? Enter: ");
     let mut steps:String = String::new();
